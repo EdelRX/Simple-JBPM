@@ -1,0 +1,16 @@
+import org.drools.core.process.core.datatype.impl.type.StringDataType;
+
+[
+  [
+    "name" : "Custom",
+    "parameters" : [
+        "MyFirstParam" : new StringDataType(),
+        "MySecondParam" : new StringDataType(),
+    ],
+    "results" : [
+        "Output" : new StringDataType(),
+    ],
+    "displayName" : "Custom Work Item",
+    "icon" : ""
+  ]
+]
