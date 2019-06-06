@@ -19,6 +19,15 @@ public class JbpmService {
 
     @Autowired
     private DeploymentService deploymentService;
+    
+    public Long initProcess() {
+    	ArrayList<DeployedUnit> deployedUnits = new ArrayList<>(deploymentService.getDeployedUnits());
+        String containerId = deployedUnits.get(0).getDeploymentUnit().getIdentifier();
+        log.info("deployed unit: " + containerId);
+		log.info("Starting simple test process");
+		Long processInstanceId = this.processService.startProcess(containerId, "test.test");
+		return processInstanceId;
+    }
 
     public void completeWorkItem(Long processInstanceId, Long workItemId, Map<String, Object> result) {
 
@@ -26,6 +35,6 @@ public class JbpmService {
         String containerId = deployedUnits.get(0).getDeploymentUnit().getIdentifier();
         log.info("deployed unit: " + containerId);
         this.processService.completeWorkItem(containerId, processInstanceId, workItemId, result);
-
+        log.info("Completed WorkItem: " + workItemId);
     }
 }
