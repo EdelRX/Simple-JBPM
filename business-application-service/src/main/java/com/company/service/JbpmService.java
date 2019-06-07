@@ -9,10 +9,14 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Slf4j
 @Service
 public class JbpmService {
+
+    private Lock processServicelock = new ReentrantLock();
 
     @Autowired
     private ProcessService processService;
@@ -21,20 +25,31 @@ public class JbpmService {
     private DeploymentService deploymentService;
     
     public Long initProcess() {
-    	ArrayList<DeployedUnit> deployedUnits = new ArrayList<>(deploymentService.getDeployedUnits());
-        String containerId = deployedUnits.get(0).getDeploymentUnit().getIdentifier();
-        log.info("deployed unit: " + containerId);
-		log.info("Starting simple test process");
-		Long processInstanceId = this.processService.startProcess(containerId, "test.test");
-		return processInstanceId;
+        Long processInstanceId = 0L;
+        this.processServicelock.lock();
+        try {
+            ArrayList<DeployedUnit> deployedUnits = new ArrayList<>(deploymentService.getDeployedUnits());
+            String containerId = deployedUnits.get(0).getDeploymentUnit().getIdentifier();
+            log.info("Starting simple test process in [{}]", containerId);
+            processInstanceId = this.processService.startProcess(containerId, "test.test");
+        } finally {
+            this.processServicelock.unlock();
+        }
+        log.info("Started simple test process with id [{}]", processInstanceId);
+        return processInstanceId;
     }
 
     public void completeWorkItem(Long processInstanceId, Long workItemId, Map<String, Object> result) {
 
-        ArrayList<DeployedUnit> deployedUnits = new ArrayList<>(deploymentService.getDeployedUnits());
-        String containerId = deployedUnits.get(0).getDeploymentUnit().getIdentifier();
-        log.info("deployed unit: " + containerId);
-        this.processService.completeWorkItem(containerId, processInstanceId, workItemId, result);
+        this.processServicelock.lock();
+        try {
+            ArrayList<DeployedUnit> deployedUnits = new ArrayList<>(deploymentService.getDeployedUnits());
+            String containerId = deployedUnits.get(0).getDeploymentUnit().getIdentifier();
+            log.info("completing work item [{}] on [{}] of [{}]", workItemId, processInstanceId, containerId);
+            this.processService.completeWorkItem(containerId, processInstanceId, workItemId, result);
+        } finally {
+            this.processServicelock.unlock();
+        }
         log.info("Completed WorkItem: " + workItemId);
     }
 }
