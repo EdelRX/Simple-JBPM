@@ -20,6 +20,7 @@ public class CustomWorkItemHandler implements WorkItemHandler{
 	@Override
 	public void executeWorkItem(WorkItem workItem, WorkItemManager manager) {
 		log.info("Entering WorkItem execution method. Process Id: [{}]", workItem.getProcessInstanceId());
+		log.info("Execution of WorkItem with id: " + workItem.getId());
 		Map<String, Object> map = new HashMap<>();
 		jbpmService.completeWorkItem(workItem.getProcessInstanceId(),workItem.getId(), map);
 		log.info("Exiting WorkItem execution method");

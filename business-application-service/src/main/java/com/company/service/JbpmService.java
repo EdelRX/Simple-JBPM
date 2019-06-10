@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -31,7 +32,13 @@ public class JbpmService {
             ArrayList<DeployedUnit> deployedUnits = new ArrayList<>(deploymentService.getDeployedUnits());
             String containerId = deployedUnits.get(0).getDeploymentUnit().getIdentifier();
             log.info("Starting simple test process in [{}]", containerId);
-            processInstanceId = this.processService.startProcess(containerId, "test.test");
+            
+            boolean mustFail = (Math.random() > 0.5)? true:false;
+            log.info("mustFail: " + mustFail);
+            Map<String,Object> params = new HashMap<String, Object>();
+            params.put("mustFail", mustFail);
+            
+            processInstanceId = this.processService.startProcess(containerId, "src.main.resources.SimpleErrorProcess",params);
         } finally {
             this.processServicelock.unlock();
         }
